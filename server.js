@@ -19,7 +19,7 @@ app.get('/', (req, res) => {
 });
 
 // BURAYA TIKTOK KULLANICI ADINI YAZ (CANLI YAYINDA OLMALISIN)
-let tiktokUsername = "onurkapci0"; 
+let tiktokUsername = "mehmetaliekresmi"; 
 
 let tiktokConn = new WebcastPushConnection(tiktokUsername);
 let countryScores = {};
@@ -56,3 +56,4 @@ tiktokConn.on('chat', data => {
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Sunucu ${PORT} portunda aktif!`);
 });
+
