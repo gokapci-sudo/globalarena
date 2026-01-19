@@ -10,14 +10,15 @@ const io = new Server(server, {
     cors: { origin: "*" }
 });
 
+// Render'ın atadığı portu veya 10000'i kullanır
 const PORT = process.env.PORT || 10000;
 
-// index.html ana dizinde olduğu için burayı güncelledik
+// index.html artık dışarıda olduğu için direkt ana dizinden gönderiyoruz
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// TikTok Kullanıcı Adın (Canlı yayının açık olmalı!)
+// BURAYA TIKTOK KULLANICI ADINI YAZ (CANLI YAYINDA OLMALISIN)
 let tiktokUsername = "onurkapci0"; 
 
 let tiktokConn = new WebcastPushConnection(tiktokUsername);
@@ -27,8 +28,8 @@ function connectTikTok() {
     tiktokConn.connect().then(state => {
         console.log(`✅ TikTok'a Bağlanıldı: ${state.roomId}`);
     }).catch(err => {
-        console.error('❌ Bağlantı Hatası:', err.message);
-        setTimeout(connectTikTok, 30000); // 30 saniyede bir tekrar dene
+        console.error('❌ TikTok Bağlantı Hatası (Yayın kapalı olabilir):', err.message);
+        setTimeout(connectTikTok, 15000); // 15 saniyede bir tekrar dene
     });
 }
 
@@ -51,8 +52,7 @@ tiktokConn.on('chat', data => {
     }
 });
 
-// HATA BURADAYDI: Standart İngilizce komut ve doğru tırnak işaretleri
+// 0.0.0.0 dinlemesi Render'ın dış erişimi için zorunludur
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Sunucu ${PORT} portunda aktif!`);
 });
-
