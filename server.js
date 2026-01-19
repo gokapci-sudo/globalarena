@@ -10,30 +10,25 @@ const io = new Server(server, {
     cors: { origin: "*" }
 });
 
-// RENDER İÇİN KRİTİK PORT AYARI
 const PORT = process.env.PORT || 10000;
 
-app.use(express.static(path.join(__dirname, 'public')));
-
+// index.html ana dizinde olduğu için burayı güncelledik
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// KULLANICI ADINI BURAYA YAZ (YAYININ AÇIK OLMASI LAZIM)
+// TikTok Kullanıcı Adın (Canlı yayının açık olmalı!)
 let tiktokUsername = "KENDI_KULLANICI_ADIN"; 
 
 let tiktokConn = new WebcastPushConnection(tiktokUsername);
-
 let countryScores = {};
 
-// Bağlantıyı bir fonksiyon içine alalım ki koparsa tekrar denesin
 function connectTikTok() {
     tiktokConn.connect().then(state => {
         console.log(`✅ TikTok'a Bağlanıldı: ${state.roomId}`);
     }).catch(err => {
-        console.error('❌ Bağlantı Hatası (Yayın kapalı olabilir):', err.message);
-        // Yayın kapalıysa 1 dakikada bir tekrar denesin
-        setTimeout(connectTikTok, 60000);
+        console.error('❌ Bağlantı Hatası:', err.message);
+        setTimeout(connectTikTok, 30000); // 30 saniyede bir tekrar dene
     });
 }
 
@@ -56,5 +51,7 @@ tiktokConn.on('chat', data => {
     }
 });
 
-// Render için 0.0.0.0 üzerinden dinlemek çok önemlidir
-server.listen(PORT, '0.0.
+// HATA BURADAYDI: Standart İngilizce komut ve doğru tırnak işaretleri
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Sunucu ${PORT} portunda aktif!`);
+});
