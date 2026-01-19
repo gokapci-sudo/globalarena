@@ -20,7 +20,7 @@ app.get('/', (req, res) => {
 });
 
 // BURAYA KENDİ TIKTOK KULLANICI ADINI YAZ
-let tiktokUsername = "KENDI_KULLANICI_ADIN"; 
+let tiktokUsername = "selimtarim"; 
 
 let tiktokConn = new WebcastPushConnection(tiktokUsername);
 
@@ -59,3 +59,4 @@ tiktokConn.on('gift', data => {
 server.listen(PORT, () => {
     console.log(`🚀 Sunucu ${PORT} portunda aktif!`);
 });
+
