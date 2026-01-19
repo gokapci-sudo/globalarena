@@ -18,7 +18,7 @@ app.get('/', (req, res) => {
 });
 
 // TikTok Kullanıcı Adın (Canlı yayının açık olmalı!)
-let tiktokUsername = "KENDI_KULLANICI_ADIN"; 
+let tiktokUsername = "onurkapci0"; 
 
 let tiktokConn = new WebcastPushConnection(tiktokUsername);
 let countryScores = {};
@@ -55,3 +55,4 @@ tiktokConn.on('chat', data => {
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Sunucu ${PORT} portunda aktif!`);
 });
+
