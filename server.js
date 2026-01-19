@@ -14,56 +14,61 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// KENDİ KULLANICI ADINI BURAYA YAZ
+// BURAYA @ OLMADAN KULLANICI ADINI YAZ
 let tiktokUsername = "onurkapci0"; 
 
 let tiktokConn = new WebcastPushConnection(tiktokUsername);
 let countryScores = {};
-let lastMessageCountry = {}; // Kullanıcının seçtiği son ülkeyi tutar
+let userSelectedCountry = {}; // Kullanıcının seçtiği ülkeyi hafızada tutar
 
 tiktokConn.connect().then(state => {
-    console.log(`✅ Bağlanıldı: ${state.roomId}`);
+    console.log(`✅ TikTok Bağlantısı Başarılı: ${state.roomId}`);
 }).catch(err => {
-    console.error('❌ Hata:', err);
+    console.error('❌ Bağlantı Hatası:', err);
 });
 
-// Chat'ten gelen mesajlar sadece PUAN artırır
+// CHAT İZLEME
 tiktokConn.on('chat', data => {
     const msg = data.comment.toUpperCase().trim();
     const codes = ['TR', 'AZ', 'KU', 'SY', 'IQ', 'IR', 'US', 'DE', 'FR'];
     
     if (codes.includes(msg)) {
-        lastMessageCountry[data.uniqueId] = msg; // Kullanıcıyı ülkesiyle eşleştir
+        // Kullanıcının en son hangi ülkeyi seçtiğini kaydet (Hediye için)
+        userSelectedCountry[data.uniqueId] = msg;
+
+        // Puanı artır
         if (!countryScores[msg]) countryScores[msg] = 0;
         countryScores[msg] += 1;
 
+        // Ekrana gönder
         io.emit('score_update', {
             country: msg,
             totalScore: countryScores[msg],
-            type: 'chat' // Sadece puan güncellemesi olduğunu belirt
+            type: 'chat'
         });
     }
 });
 
-// Sadece HEDİYE atanlar "KING" olur
+// HEDİYE İZLEME
 tiktokConn.on('gift', data => {
-    const user = data.uniqueId;
-    const selectedCountry = lastMessageCountry[user]; // Hediye atanın son yazdığı ülke
+    const userId = data.uniqueId;
+    const selectedCountry = userSelectedCountry[userId];
 
+    // Eğer kullanıcı daha önce bir ülke kodu yazdıysa hediyesi o ülkeye gider
     if (selectedCountry) {
-        const giftPoints = data.diamondCount * 10; // Her elmas 10 puan
-        countryScores[selectedCountry] += giftPoints;
+        const points = data.diamondCount * 10;
+        countryScores[selectedCountry] += points;
 
         io.emit('score_update', {
             country: selectedCountry,
             totalScore: countryScores[selectedCountry],
-            user: user,
+            user: data.uniqueId,
             profilePic: data.profilePictureUrl,
-            type: 'gift' // King değişikliği olduğunu belirt
+            type: 'gift'
         });
     }
 });
 
 server.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Sunucu ${PORT} aktif!`);
+    console.log(`🚀 Server ${PORT} üzerinde çalışıyor...`);
 });
