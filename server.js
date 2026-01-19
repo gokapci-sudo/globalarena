@@ -15,7 +15,7 @@ app.get('/', (req, res) => {
 });
 
 // BURAYI GÜNCELLE: @ işareti koyma
-let tiktokUsername = "onurkapci0"; 
+let tiktokUsername = "bayzarif"; 
 
 let tiktokConn = new WebcastPushConnection(tiktokUsername);
 let countryScores = {};
@@ -57,5 +57,6 @@ tiktokConn.on('gift', data => {
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Server ${PORT} aktif!`);
 });
+
 
 
