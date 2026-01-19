@@ -1,42 +1,61 @@
-const { WebcastPushConnection } = require('tiktok-live-connector');
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
+const { WebcastPushConnection } = require('tiktok-live-connector');
 const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+    cors: { origin: "*" }
+});
 
-// TEST İÇİN ŞU AN YAYINDA OLAN BİRİNİ YAZ
-const tiktokUsername = "mynameismeyra"; 
+// Render ve Yerel Port Ayarı
+const PORT = process.env.PORT || 3000;
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static('public'));
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// BURAYA KENDİ TIKTOK KULLANICI ADINI YAZ
+let tiktokUsername = "KENDI_KULLANICI_ADIN"; 
 
 let tiktokConn = new WebcastPushConnection(tiktokUsername);
 
-// BAĞLANTI DURUMUNU İZLE
+let countryScores = {};
+
 tiktokConn.connect().then(state => {
-    console.log(`✅ BAĞLANTI KURULDU: ${tiktokUsername}`);
+    console.log(`✅ TikTok'a Bağlanıldı: ${state.roomId}`);
 }).catch(err => {
-    console.log(`❌ BAĞLANTI HATASI: ${err}`);
+    console.error('❌ Bağlantı Hatası:', err);
 });
 
-// CHAT'TEN GELEN HER ŞEYİ TERMİNALDE GÖR
 tiktokConn.on('chat', data => {
-    console.log(`💬 Mesaj Geldi: ${data.uniqueId} -> ${data.comment}`); // Bu satır PowerShell'de her şeyi gösterir
+    const msg = data.comment.toUpperCase().trim();
+    // Desteklenen kodlar
+    const codes = ['TR', 'AZ', 'KU', 'SY', 'IQ', 'IR', 'US', 'DE', 'FR'];
     
-    const message = data.comment.toUpperCase().trim();
-    if (message.length <= 3 || message === 'KU') {
+    if (codes.includes(msg)) {
+        if (!countryScores[msg]) countryScores[msg] = 0;
+        countryScores[msg] += 1; // Mesaj başına 1 puan
+
         io.emit('score_update', {
-            country: message,
-            totalScore: 1, // Test için her seferinde 1 gönderelim
-            user: data.nickname,
+            country: msg,
+            totalScore: countryScores[msg],
+            user: data.uniqueId,
             profilePic: data.profilePictureUrl
         });
     }
 });
 
-server.listen(3000, () => {
-    console.log('🚀 Sunucu http://localhost:3000 adresinde hazır!');
+tiktokConn.on('gift', data => {
+    // Hediye geldiğinde puanı daha çok artır (örnek: 10 katı)
+    // Hangi ülkeye gideceğini bulmak için kullanıcının son mesajına bakılabilir 
+    // veya basitçe mevcut lideri koruyabilirsin.
+});
+
+server.listen(PORT, () => {
+    console.log(`🚀 Sunucu ${PORT} portunda aktif!`);
 });
